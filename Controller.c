@@ -31,28 +31,32 @@ const int joyStickDeadzone = 5;
 
 void drive()
 {
-	short joyY = joystick.joy1_y1 * -1;
-	short joyX = joystick.joy1_x2;
-    short joyY2 = joystick.joy1_y2;
+	short joyY1 = joystick.joy1_y1 * -1;
+	short joyX2 = joystick.joy1_x2;
+	short joyY2 = joystick.joy1_y2 * -1;
 
-	if (abs(joyY) < joyStickDeadzone)
-		joyY = 0;
-	if (abs(joyX) < joyStickDeadzone)
-		joyX = 0;
-	if (abs(joyY2) < joyStickDeadzone)
+	if (abs(joyY1) < joyStickDeadzone)
+		joyY1 = 0;
+	if (abs(joyX2) < joyStickDeadzone)
+		joyX2 = 0;
+	if (joyY2	 < joyStickDeadzone)
 		joyY2 = 0;
 
-	float power = maxPower * joyY / (joyStickSize / 2);
-	float directionalPercent = joyX / (joyStickSize / 2);
-    // The closer to the center, the stronger  the turn strength.
-	float directionalStrength = (joyStickSize / 2) / (joyStickSize / 2 + abs(joyY2));
+	float power = maxPower * joyY1 / (joyStickSize / 2);
+	float directionalPercent = joyX2 / (joyStickSize / 2);
+	// The closer to the center, the stronger  the turn strength.
+	float directionalStrength = (joyY2 / (joyStickSize / 2) - 0.5) * 2 * directionalPercent;
 
+	if (directionalPercent == 0) {
+		motor[motorLeft] = power;
+		motor[motorRight] = power;
+	}
 	if (directionalPercent > 0)
 	{
 		motor[motorLeft] = power - (power * abs(directionalPercent));
 		motor[motorRight] = power - motor[motorLeft] * directionalStrength;
 	}
-	else
+	else if (directionalPercent < 0)
 	{
 		motor[motorRight] = power - (power * abs(directionalPercent));
 		motor[motorLeft] = power - motor[motorRight] * directionalStrength;
