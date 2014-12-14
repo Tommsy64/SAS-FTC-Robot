@@ -27,29 +27,35 @@ void initializeRobot()
 
 const int maxPower = 100;
 const short joyStickSize = 256;
+const int joyStickDeadzone = 5;
 
 void drive()
 {
 	short joyY = joystick.joy1_y1 * -1;
 	short joyX = joystick.joy1_x2;
+    short joyY2 = joystick.joy1_y2;
 
-	if (abs(joyY) < 5)
+	if (abs(joyY) < joyStickDeadzone)
 		joyY = 0;
-	if (abs(joyX) < 5)
+	if (abs(joyX) < joyStickDeadzone)
 		joyX = 0;
+	if (abs(joyY2) < joyStickDeadzone)
+		joyY2 = 0;
 
 	float power = maxPower * joyY / (joyStickSize / 2);
 	float directionalPercent = joyX / (joyStickSize / 2);
+    // The closer to the center, the stronger  the turn strength.
+	float directionalStrength = (joyStickSize / 2) / (joyStickSize / 2 + abs(joyY2));
 
 	if (directionalPercent > 0)
 	{
 		motor[motorLeft] = power - (power * abs(directionalPercent));
-		motor[motorRight] = power - motor[motorLeft];
+		motor[motorRight] = power - motor[motorLeft] * directionalStrength;
 	}
 	else
 	{
 		motor[motorRight] = power - (power * abs(directionalPercent));
-		motor[motorLeft] = power - motor[motorRight];
+		motor[motorLeft] = power - motor[motorRight] * directionalStrength;
 	}
 }
 
