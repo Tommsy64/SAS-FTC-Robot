@@ -22,16 +22,26 @@ void initializeRobot()
 {
 	// Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
 
+	// Brake motors. Set to false to float motors.
+	bFloatDuringInactiveMotorPWM = false;
+
+	// Enabled closed loop motor speed calculation. Set to mtrNoReg for open loop.
+	nMotorPIDSpeedCtrl[motorA] = mtrSpeedReg;
+
+	// TODO: Update this value bassed on battery level.
+	// The max speed used when motor power == 100%. The default value for an open looped system is 1000.
+	// On a closed loop system, the calculation needs the maximum speed the motor can do on a low battery, which is around 750.
+	nMaxRegulatedSpeed12V = 750;
 	return;
 }
 
 const int maxPower = 100;
-const short joyStickSize = 256;
+const int joyStickSize = 256;
 
 void drive()
 {
-	short joyY = joystick.joy1_y1 * -1;
-	short joyX = joystick.joy1_x2;
+	int joyY = joystick.joy1_y1 * -1;
+	int joyX = joystick.joy1_x2;
 
 	if (abs(joyY) < 5)
 		joyY = 0;
