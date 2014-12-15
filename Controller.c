@@ -22,6 +22,16 @@ void initializeRobot()
 {
 	// Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
 
+	// Brake motors. Set to false to float motors.
+	bFloatDuringInactiveMotorPWM = false;
+
+	// Enabled closed loop motor speed calculation. Set to mtrNoReg for open loop.
+	nMotorPIDSpeedCtrl[motorA] = mtrSpeedReg;
+
+	// TODO: Update this value bassed on battery level.
+	// The max speed used when motor power == 100%. The default value for an open looped system is 1000.
+	// On a closed loop system, the calculation needs the maximum speed the motor can do on a low battery, which is around 750.
+	nMaxRegulatedSpeed12V = 750;
 	return;
 }
 
