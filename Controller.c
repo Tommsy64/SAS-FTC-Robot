@@ -25,15 +25,15 @@ void initializeRobot()
 	return;
 }
 
-const int maxPower = 100;
-const short joyStickSize = 256;
-const int joyStickDeadzone = 5;
+const float maxPower = 100;
+const float joyStickSize = 256;
+const float joyStickDeadzone = 5;
 
 void drive()
 {
-	short joyY1 = joystick.joy1_y1 * -1;
-	short joyX2 = joystick.joy1_x2;
-	short joyY2 = joystick.joy1_y2 * -1;
+	float joyY1 = joystick.joy1_y1 * -1;
+	float joyX2 = joystick.joy1_x2 * -1;
+	float joyY2 = joystick.joy1_y2 * -1;
 
 	if (abs(joyY1) < joyStickDeadzone)
 		joyY1 = 0;
