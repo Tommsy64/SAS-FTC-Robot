@@ -35,44 +35,70 @@ void initializeRobot()
 	return;
 }
 
-const float maxPower = 100;
-const float joyStickSize = 256;
-const float joyStickDeadzone = 5;
-
-void drive()
-{
-	float joyY1 = joystick.joy1_y1 * -1;
-	float joyX2 = joystick.joy1_x2 * -1;
-	float joyY2 = joystick.joy1_y2 * -1;
-
-	if (abs(joyY1) < joyStickDeadzone)
-		joyY1 = 0;
-	if (abs(joyX2) < joyStickDeadzone)
-		joyX2 = 0;
-	if (joyY2	 < joyStickDeadzone)
-		joyY2 = 0;
-
-	float power = maxPower * joyY1 / (joyStickSize / 2);
-	float directionalPercent = joyX2 / (joyStickSize / 2);
-	// The closer to the center, the stronger  the turn strength.
-	float directionalStrength = (joyY2 / (joyStickSize / 2) - 0.5) * 2 * directionalPercent;
-
-	if (directionalPercent == 0) {
-		motor[motorLeft] = power;
-		motor[motorRight] = power;
-	}
-	if (directionalPercent > 0)
-	{
-		motor[motorLeft] = power - (power * abs(directionalPercent));
-		motor[motorRight] = power - motor[motorLeft] * directionalStrength;
-	}
-	else if (directionalPercent < 0)
-	{
-		motor[motorRight] = power - (power * abs(directionalPercent));
-		motor[motorLeft] = power - motor[motorRight] * directionalStrength;
-	}
+float toPercent(float val, float max) {
+	return val/max;
 }
 
+const float maxPower = 100;
+const float joyStickSize = 256;
+const float joyStickDeadzone = 4;
+
+void drive(float joyY1, float joyX2, float joyY2) {
+
+	// Set joysticks to 0 if under deadzone.
+	if (abs(joyY1) < joyStickDeadzone) { joyY1 = 0; }
+	if (abs(joyX2) < joyStickDeadzone) { joyX2 = 0; }
+	if (abs(joyY2) < joyStickDeadzone) { joyY2 = 1; }
+
+	// Calculate power and direction.
+	float power = maxPower * (joyY1 / (joyStickSize / 2));
+
+	// Convert joystick xy to radians on a polar plane.
+	float directionRad = atan2(joyY2 , joyX2);
+
+	// Convert direction to degrees and set 0 to forward, -90 left, 90 right.
+	float direction = 0;
+	if (directionRad != 0) {
+		direction = ((directionRad * (180/PI)) - 90) * -1;
+	}
+
+	// If the directional joystick is facing downward, compensate.
+	if (direction > 90) {
+		direction = direction - 180;
+	}
+
+	float motorLeftPower = 0;
+	float motorRightPower = 0;
+
+	if (direction == 0) {
+		motorLeftPower = power;
+		motorRightPower = power;
+	}
+	if (direction > 45) {
+		motorLeftPower = power;
+		motorRightPower = power * toPercent(-direction + 45, 45);
+	}
+	else  {
+		if (direction > 0) {
+			motorLeftPower = power;
+			motorRightPower = power - power * toPercent(direction, 45);
+		}
+		else  {
+			if (direction < -45) {
+				motorLeftPower = power * toPercent(-direction - 45, 45) * -1;
+				motorRightPower = power;
+				} else {
+				if (direction < 0) {
+					motorLeftPower = power + power * toPercent(direction, 45);
+					motorRightPower = power;
+				}
+			}
+		}
+	}
+
+	motor[motorLeft] = (int) motorLeftPower;
+	motor[motorRight] = (int) motorRightPower;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -95,6 +121,6 @@ task main()
 	while (true)
 	{
 		getJoystickSettings(joystick);
-		drive();
+		drive(joystick.joy1_y1 * -1, joystick.joy1_x2, joystick.joy1_y2 * -1);
 	}
 }
